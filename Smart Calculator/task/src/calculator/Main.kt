@@ -1,5 +1,6 @@
 package calculator
 
+import java.math.BigInteger
 import java.util.*
 
 
@@ -137,7 +138,7 @@ class Expression(val expression: String) {
 }
 
 object Calculator {
-    val variables = mutableMapOf<String, Int>()
+    val variables = mutableMapOf<String, BigInteger>()
 
     fun parse(expression: String): Expression {
         return Expression(expression.replace("\\s+".toRegex(), " "))
@@ -155,11 +156,11 @@ object Calculator {
         return op
     }
 
-    fun evaluate(ex: Expression): Int {
-        val numStk = Stack<Int>()
+    fun evaluate(ex: Expression): BigInteger {
+        val numStk = Stack<BigInteger>()
         val opStk = Stack<String>()
 
-//        var result = evaluateToken(ex.tokens[0]) //.value.toInt()
+//        var result = evaluateToken(ex.tokens[0]) //.value.toBigInteger()
         for (i in 0..ex.tokens.lastIndex) {
             if (ex.tokens[i].tokenType == TokenTypesEnum.OPERATOR) {
                 ex.tokens[i].value = reduceOperator(ex.tokens[i].value)
@@ -180,12 +181,12 @@ object Calculator {
                     }
                 }
             } else if (ex.tokens[i].tokenType == TokenTypesEnum.NUMBER) {
-                numStk.push(ex.tokens[i].value.toInt())
+                numStk.push(ex.tokens[i].value.toBigInteger())
             } else if (ex.tokens[i].tokenType == TokenTypesEnum.VARIABLE) {
                 numStk.push(evaluateToken(ex.tokens[i]))
             }
 
-//            val num2 = evaluateToken(ex.tokens[i + 1])//.value.toInt()
+//            val num2 = evaluateToken(ex.tokens[i + 1])//.value.toBigInteger()
 
 
         }
@@ -196,7 +197,7 @@ object Calculator {
 
     }
 
-    private fun processPran(numStk: Stack<Int>, opStk: Stack<String>) {
+    private fun processPran(numStk: Stack<BigInteger>, opStk: Stack<String>) {
         if (opStk.isEmpty()) throw Exception("Invalid expression")
         var op = opStk.pop()!!
         while (op != "(") {
@@ -209,7 +210,7 @@ object Calculator {
         }
     }
 
-    private fun processOperation(numStk: Stack<Int>, opStk: Stack<String>) {
+    private fun processOperation(numStk: Stack<BigInteger>, opStk: Stack<String>) {
         val num2 = numStk.pop()!!
         val num1 = numStk.pop()!!
         if (opStk.isEmpty()) throw Exception("Invalid expression")
@@ -220,9 +221,9 @@ object Calculator {
         numStk.push(doMath(num1, op, num2))
     }
 
-    private fun doMath(num1: Int, op: String, num2: Int): Int {
+    private fun doMath(num1: BigInteger, op: String, num2: BigInteger): BigInteger {
 
-        val result: Int
+        val result: BigInteger
         when (op) {
             "+" -> {
                 result = num1 + num2
@@ -237,7 +238,7 @@ object Calculator {
                 result = num1 / num2
             }
             "^" -> {
-                result = Math.pow(num1.toDouble(), num2.toDouble()).toInt()
+                result = num1.pow(num2.toInt())
             }
             else -> throw Exception("Unknown Operator '$op'")
 
@@ -251,9 +252,9 @@ object Calculator {
         return precedances[op1]!! - precedances[op2]!!
     }
 
-    private fun evaluateToken(token: Token): Int {
+    private fun evaluateToken(token: Token): BigInteger {
         return if (token.tokenType == TokenTypesEnum.NUMBER) {
-            token.value.toInt()
+            token.value.toBigInteger()
         } else if (token.tokenType == TokenTypesEnum.VARIABLE) {
             val match = "[-+]".toRegex().find(token.value)
             val variuableName = "[A-Za-z]+".toRegex().find(token.value)!!.value
@@ -273,14 +274,14 @@ object Calculator {
 
     fun updateVarMap(ex: Expression) {
         val assign = assign(ex)
-        if (assign.second.toIntOrNull() == null) {
+        if (assign.second.toBigIntegerOrNull() == null) {
             if (variables.containsKey(assign.second)) {
                 variables.put(assign.first, variables[assign.second]!!)
             } else {
                 throw Exception("Invalid variable")
             }
         } else {
-            variables.put(assign.first, assign.second.toInt())
+            variables.put(assign.first, assign.second.toBigInteger())
         }
 
     }
